@@ -1,16 +1,32 @@
+---
+task_categories:
+- robotics
+license: mit
+language:
+- en
+tags:
+- robustness
+- benchmark
+- vision-language-action
+- vla
+- perturbations
+- robot-learning
+---
+
 <h1 align="center">
 LIBERO-Plus: In-depth Robustness Analysis of Vision-Language-Action Models
 </h1>
 
 <p align="center">
   📄 <a href="https://arxiv.org/pdf/2510.13626v1"><strong>Paper</strong></a> |   
-  🏗️ <a href="https://huggingface.co/datasets/Sylvest/LIBERO-plus/tree/main"><strong>Assets</strong></a> | 
+  🏗️ <a href="https://github.com/sylvestf/LIBERO-plus"><strong>Repo</strong></a> | 
   🌐 <a href="https://sylvestf.github.io/LIBERO-plus"><strong>Website</strong></a> | 
+  🤗 <a href="https://huggingface.co/datasets/Sylvest/LIBERO-plus/tree/main"><strong>Assets</strong></a> | 
   🤗 <a href="https://huggingface.co/Sylvest/openvla-7b-oft-finetuned-libero-plus-mixdata"><strong>Model</strong></a> | 
-  📁 <a href="https://huggingface.co/datasets/Sylvest/libero_plus_rlds"><strong>Dataset</strong></a>
+  📁 <a href="https://huggingface.co/datasets/Sylvest/libero_plus_rlds"><strong>Training Dataset</strong></a>
 </p>
 
-![libero-plus](./static/images/libero-plus.jpg)
+![libero-plus](./static/images/libero-plus.png)
 
 ## 🔥 Overview
 This repository contains the official implementation and benchmark for our paper "In-depth Robustness Analysis for Vision-Language-Action Models". We systematically expose the hidden vulnerabilities of contemporary VLA models through comprehensive robustness evaluation across seven perturbation dimensions. You can simply replace the original `libero` with a `pip install -e .` without modifying your code.
@@ -25,13 +41,13 @@ This repository contains the official implementation and benchmark for our paper
 ### 7 Perturbation Dimensions
 We introduce **LIBERO-plus**, a comprehensive benchmark with 10,030 tasks spanning:
 
-1. **Objects Layout** - Confounding objects and target object displacement
-2. **Camera Viewpoints** - Position, orientation, and field-of-view changes
-3. **Robot Initial States** - Manipulator initial pose variations
-4. **Language Instructions** - LLM-based instruction rewriting
-5. **Light Conditions** - Intensity, direction, color, and shadow variations
-6. **Background Textures** - Scene and surface appearance changes
-7. **Sensor Noise** - Photometric distortions and image degradation
+1.  **Objects Layout** - Confounding objects and target object displacement
+2.  **Camera Viewpoints** - Position, orientation, and field-of-view changes
+3.  **Robot Initial States** - Manipulator initial pose variations
+4.  **Language Instructions** - LLM-based instruction rewriting
+5.  **Light Conditions** - Intensity, direction, color, and shadow variations
+6.  **Background Textures** - Scene and surface appearance changes
+7.  **Sensor Noise** - Photometric distortions and image degradation
 
 ### Evaluated Models
 - OpenVLA and variants (OFT, OFT_w, OFT_m)
@@ -63,7 +79,7 @@ apt-get install libmagickwand-dev
 pip install -r extra_requirements.txt
 ```
 
-Please download our assets from [LIBERO-plus](https://huggingface.co/datasets/Sylvest/LIBERO-plus/tree/main), including hundreds of new objects, textures, and other required assets. Please unzip the `assets.zip` file to `/LIBERO-plus/libero/libero` path. You can also find the [RLDS training dataset](https://huggingface.co/datasets/Sylvest/libero_plus_rlds/tree/main) mentioned in our paper and the [OpenVLA-OFT weights after mix-SFT](https://huggingface.co/Sylvest/openvla-7b-oft-finetuned-libero-plus-mixdata/tree/main) on this dataset. We also provide [LEROBOT training dataset](https://huggingface.co/datasets/Sylvest/libero_plus_lerobot) and [training dataset for each suite](https://huggingface.co/datasets/Sylvest/libero_plus_data_4suite/tree/main).
+Please download our assets from [LIBERO-plus](https://huggingface.co/datasets/Sylvest/LIBERO-plus/tree/main), including hundreds of new objects, textures, and other required assets. Please unzip the `assets.zip` file to `/LIBERO-plus/libero/libero` path. You can also find the [training dataset](https://huggingface.co/datasets/Sylvest/libero_plus_rlds/tree/main) mentioned in our paper and the [OpenVLA-OFT weights after mix-SFT](https://huggingface.co/Sylvest/openvla-7b-oft-finetuned-libero-plus-mixdata/tree/main) on this dataset.
 
 The extracted directory structure should look like:
 
@@ -90,17 +106,17 @@ The evaluation method is almost identical to `LIBERO`. The only required modific
 ## 📊 LIBERO-Plus Benchmark Leaderboard
 | Model | Camera | Robot | Language | Light | Background | Noise | Layout | Total |
 |-------|--------|-------|----------|-------|------------|-------|--------|-------|
-| [OpenVLA](https://github.com/openvla/openvla) | 0.8 | 3.5 | 23.0 | 8.1 | 34.8 | 15.2 | 28.5 | 17.3 |
-| [OpenVLA-OFT](https://github.com/moojink/openvla-oft) | 56.4 | 31.9 | 79.5 | 88.7 | 93.3 | 75.8 | 74.2 | 70.0 |
-| [OpenVLA-OFT_w](https://github.com/moojink/openvla-oft) | 10.4 | 38.7 | 70.5 | 76.8 | 93.6 | 49.9 | 69.9 | 56.4 |
-| [NORA](https://github.com/declare-lab/nora) | 2.2 | 37.0 | 65.1 | 45.7 | 58.6 | 12.8 | 62.1 | 39.8 |
-| [WorldVLA](https://github.com/alibaba-damo-academy/WorldVLA) | 0.1 | 27.9 | 41.6 | 43.7 | 17.1 | 10.9 | 38.0 | 25.3 |
-| [UniVLA](https://github.com/OpenDriveLab/UniVLA) | 1.8 | 46.2 | 69.6 | 69.0 | 81.0 | 21.2 | 31.9 | 43.9 |
-| [π₀](https://github.com/Physical-Intelligence/openpi) | 13.8 | 6.0 | 58.8 | 85.0 | 81.4 | 79.0 | 68.9 | 54.6 |
-| [π₀-Fast](https://github.com/Physical-Intelligence/openpi) | 65.1 | 21.6 | 61.0 | 73.2 | 73.2 | 74.4 | 68.8 | 64.2 |
-| [RIPT-VLA](https://github.com/Ariostgx/ript-vla) | 55.2 | 31.2 | 77.6 | 88.4 | 91.6 | 73.5 | 74.2 | 69.3 |
-| [OpenVLA-OFT_m](https://github.com/moojink/openvla-oft) | 55.6 | 21.7 | 81.0 | 92.7 | 91.0 | 78.6 | 68.7 | 68.1 |
-| **[OpenVLA-OFT+ (Ours)](https://github.com/moojink/openvla-oft)** | **92.8** | **30.3** | **85.8** | **94.9** | **93.9** | **89.3** | **77.6** | **79.6** |
+| [OpenVLA](https://github.com/openvla/openvla) | 0.8 | 3.5 | 23.0 | 8.1 | 50.4 | 15.2 | 28.5 | 17.3 |
+| [OpenVLA-OFT](https://github.com/moojink/openvla-oft) | 56.4 | 31.9 | 79.5 | 88.7 | 97.3 | 75.8 | 74.2 | 70.0 |
+| [OpenVLA-OFT_w](https://github.com/moojink/openvla-oft) | 10.4 | 38.7 | 70.5 | 76.8 | 99.2 | 49.9 | 69.9 | 56.4 |
+| [NORA](https://github.com/declare-lab/nora) | 2.2 | 37.0 | 65.1 | 45.7 | 65.5 | 12.8 | 62.1 | 39.8 |
+| [WorldVLA](https://github.com/alibaba-damo-academy/WorldVLA) | 0.1 | 27.9 | 41.6 | 43.7 | 19.8 | 10.9 | 38.0 | 25.3 |
+| [UniVLA](https://github.com/OpenDriveLab/UniVLA) | 1.8 | 46.2 | 69.6 | 69.0 | 90.7 | 21.2 | 31.9 | 43.9 |
+| [π₀](https://github.com/Physical-Intelligence/openpi) | 13.8 | 6.0 | 58.8 | 85.0 | 90.7 | 79.0 | 68.9 | 54.6 |
+| [π₀-Fast](https://github.com/Physical-Intelligence/openpi) | 65.1 | 21.6 | 61.0 | 73.2 | 97.7 | 74.4 | 68.8 | 64.2 |
+| [RIPT-VLA](https://github.com/Ariostgx/ript-vla) | 55.2 | 31.2 | 77.6 | 88.4 | **100.0** | 73.5 | 74.2 | 69.3 |
+| [OpenVLA-OFT_m](https://github.com/moojink/openvla-oft) | 55.6 | 21.7 | 81.0 | 92.7 | 92.3 | 78.6 | 68.7 | 68.1 |
+| **[OpenVLA-OFT+ (Ours)](https://github.com/moojink/openvla-oft)** | **92.8** | **30.3** | **85.8** | **94.9** | 93.9 | **89.3** | **77.6** | **79.6** |
 
 - **OpenVLA-OFT+** shows the performance of [OpenVLA-OFT with a mix-sft on LIBERO-plus dataset](https://huggingface.co/Sylvest/openvla-7b-oft-finetuned-libero-plus-mixdata/tree/main).
 - **OpenVLA-OFT_w** shows the performance of [OpenVLA-OFT without wrist observation input](https://huggingface.co/Sylvest/openvla-7b-oft-finetuned-libero-without-wrist).

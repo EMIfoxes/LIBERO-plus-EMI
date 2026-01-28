@@ -22,3 +22,9 @@ task_embedding_one_hot_offset: 1
 pretrain: false
 pretrain_model_path: ""
 benchmark_name: "LIBERO_SPATIAL"
+
+assets: /home/lxx/project/LIBERO-plus/libero/libero/assets
+bddl_files: /home/lxx/project/LIBERO-plus/libero/libero/bddl_files
+benchmark_root: /media/lxx/Elements/project/LIBERO-plus/libero/libero
+datasets: /media/lxx/Elements/project/openvla-oft/LIBERO/libero/libero/../datasets
+init_states: /home/lxx/project/LIBERO-plus/libero/libero/init_files

@@ -6,7 +6,8 @@ object change after usd2mjcf:
        <site rgba="0 0 0 0" size="0.005" pos="0.015 0.015 0" name="horizontal_radius_site" />
 """
 
-
+import sys
+sys.path.append("/home/lxx/project/LIBERO-plus")
 import os
 import re
 import numpy as np

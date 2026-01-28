@@ -49,8 +49,8 @@ def motion_blur(x, severity=1):
 
     x.motion_blur(radius=c[0], sigma=c[1], angle=np.random.uniform(-45, 45))
 
-    x = cv2.imdecode(np.fromstring(x.make_blob(), np.uint8),
-                    cv2.IMREAD_UNCHANGED)
+    x = cv2.imdecode(np.frombuffer(x.make_blob(), np.uint8),cv2.IMREAD_UNCHANGED)
+
 
     if x.shape != (224, 224):
         return np.clip(x[..., [2, 1, 0]], 0, 255)  # BGR to RGB
@@ -220,7 +220,6 @@ class ControlEnv:
             scale_factor = float(int(scale_factor)/100)
             if int(init_state) != 0:
                 robots = [robots[0]+str(init_state)]
-            # print("horizon_view, vertical_view, scale_factor, end_point_rot, end_point_vertical, robots", bddl_file_name, horizon_view, vertical_view, scale_factor, end_point_rot, end_point_vertical, robots)
         else:
             horizon_view = 0
             vertical_view = 0

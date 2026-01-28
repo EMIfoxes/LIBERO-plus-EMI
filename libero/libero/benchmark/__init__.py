@@ -55,19 +55,28 @@ def grab_language_from_filename(suite_name, x):
         en = language.find(".bddl")
         return language[:en]
     else:
+        # === 修改开始：动态获取绝对路径 ===
+        # 1. 获取当前文件 (benchmark/__init__.py) 的目录
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # 2. 回退一层到 libero/libero 目录
+        libero_root = os.path.dirname(current_dir)
+        # 3. 拼接得到正确的 bddl_files 路径
+        bddl_files_root = os.path.join(libero_root, "bddl_files")
+        # ================================
+
         if "_view_" in x:
             bddl_file_path = os.path.join(
-                get_libero_path("bddl_files"),
+                bddl_files_root,  # 使用我们动态获取的路径
                 suite_name,
                 x.split("_view_")[0]+'.bddl',
             )
         else:
             bddl_file_path = os.path.join(
-                get_libero_path("bddl_files"),
+                bddl_files_root,  # 使用我们动态获取的路径
                 suite_name,
                 x,
             )
-        # print("bddl_file_path:", bddl_file_path)
+            
         problem_info = BDDLUtils.get_problem_info(bddl_file_path)
         return problem_info["language_instruction"]
 
@@ -78,6 +87,7 @@ libero_suites = [
     "libero_goal",
     "libero_90",
     "libero_10",
+    "libero_mix",
 ]
 task_maps = {}
 max_len = 0
@@ -98,7 +108,7 @@ for libero_suite in libero_suites:
         # print(language, "\n", f"{task}.bddl", "\n")
         # print("")
 
-suite_order = ["libero_spatial", "libero_object", "libero_goal", "libero_10", "libero_90"]
+suite_order = ["libero_spatial", "libero_object", "libero_goal", "libero_10", "libero_90","libero_mix"]
 task_num = [2402, 2518, 2591, 2519, 90]
 task_order_dict = dict()
 
@@ -110,6 +120,28 @@ for idx in range(5):
         task_orders.append(order)
     task_order_dict[suite_order[idx]] = task_orders
 
+if "libero_mix" in task_maps:
+    libero_mix_task_count = len(task_maps["libero_mix"])
+    print(f"[info] dynamically calculating task orders for libero_mix with {libero_mix_task_count} tasks")
+    
+    task_orders = [list(range(0, libero_mix_task_count))]
+    for _ in range(19):
+        order = list(range(0, libero_mix_task_count))
+        random.shuffle(order)
+        task_orders.append(order)
+    task_order_dict["libero_mix"] = task_orders
+else:
+    # 如果 libero_mix 不在 task_maps 中，使用默认值
+    default_task_count = 100
+    print(f"[warning] libero_mix not found in task_maps, using default task count {default_task_count}")
+    
+    task_orders = [list(range(0, default_task_count))]
+    for _ in range(19):
+        order = list(range(0, default_task_count))
+        random.shuffle(order)
+        task_orders.append(order)
+    task_order_dict["libero_mix"] = task_orders
+
 class Benchmark(abc.ABC):
     """A Benchmark."""
 
@@ -119,7 +151,7 @@ class Benchmark(abc.ABC):
 
     def _make_benchmark(self):
         tasks = list(task_maps[self.name].values())
-        print(f"[info] using task orders {task_order_dict[self.name][self.task_order_index]}")
+        # print(f"[info] using task orders {task_order_dict[self.name][self.task_order_index]}")
         self.tasks = [tasks[i] for i in task_order_dict[self.name][self.task_order_index]]
         self.n_tasks = len(self.tasks)
 
@@ -157,85 +189,72 @@ class Benchmark(abc.ABC):
     def get_task_emb(self, i):
         return self.task_embs[i]
 
-    def get_task_init_states_ori(self, i):
-        if "_table_" in self.tasks[i].init_states_file:
-            init_states_path = os.path.join(
-                get_libero_path("init_states"),
-                self.tasks[i].problem_folder,
-                self.tasks[i].init_states_file.split("_table_")[0] + "." + self.tasks[i].init_states_file.split(".")[-1],
-            )
-        elif "_tb_" in self.tasks[i].init_states_file:
-            init_states_path = os.path.join(
-                get_libero_path("init_states"),
-                self.tasks[i].problem_folder,
-                self.tasks[i].init_states_file.split("_tb_")[0] + "." + self.tasks[i].init_states_file.split(".")[-1],
-            )
-        elif "_view_" in self.tasks[i].init_states_file:
-            init_states_path = os.path.join(
-                get_libero_path("init_states"),
-                self.tasks[i].problem_folder,
-                self.tasks[i].init_states_file.split("_view_")[0] + "." + self.tasks[i].init_states_file.split(".")[-1],
-            )
-        else:
-            init_states_path = os.path.join(
-                get_libero_path("init_states"),
-                self.tasks[i].problem_folder,
-                self.tasks[i].init_states_file,
-            )
-
-        init_states = torch.load(init_states_path)
-        return init_states
-    
     def get_task_init_states(self, i):
-        # print("======", re.sub(r'_table_\d+$', '', self.tasks[i].init_states_file))
-        # print("====init_states_path=====", self.tasks[i].init_states_file)
+        # === 修改开始：动态获取绝对路径 ===
+        # 1. 获取 benchmark 文件夹路径
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # 2. 回退一层到 libero/libero 目录
+        libero_lib_root = os.path.dirname(current_dir)
+        # 3. 拼接得到 init_files 的绝对路径 (对应报错中的 .../init_files)
+        init_files_root = os.path.join(libero_lib_root, "init_files")
+        # ================================
+
+        # 初始化变量，防止后面没有匹配到任何条件导致报错
+        init_states_path = None
+
+        # 逻辑保持原样，但将 get_libero_path("init_states") 替换为 init_files_root
         if "_language_" in self.tasks[i].init_states_file:
             init_states_path = os.path.join(
-                get_libero_path("init_states"),
+                init_files_root,  # 🔥 替换这里
                 self.tasks[i].problem_folder,
                 self.tasks[i].init_states_file.split("_language_")[0] + "." + self.tasks[i].init_states_file.split(".")[-1],
             )
         else:
             if "_view_" in self.tasks[i].init_states_file:
                 init_states_path = os.path.join(
-                    get_libero_path("init_states"),
+                    init_files_root,  # 🔥 替换这里
                     self.tasks[i].problem_folder,
                     self.tasks[i].init_states_file.split("_view_")[0] + "." + self.tasks[i].init_states_file.split(".")[-1],
                 )
             else:
+                # 这里是一系列的 if，处理不同情况
                 if "_table_" in self.tasks[i].init_states_file:
                     init_states_path = os.path.join(
-                        get_libero_path("init_states"),
+                        init_files_root,  # 🔥 替换这里
                         self.tasks[i].problem_folder,
                         re.sub(r'_table_\d+', '', self.tasks[i].init_states_file),
                     )
+                
                 if "_tb_" in self.tasks[i].init_states_file:
                     init_states_path = os.path.join(
-                        get_libero_path("init_states"),
+                        init_files_root,  # 🔥 替换这里
                         self.tasks[i].problem_folder,
                         re.sub(r'_tb_\d+', '', self.tasks[i].init_states_file),
                     )
                 
                 if "_light_" in self.tasks[i].init_states_file:
                     init_states_path = os.path.join(
-                        get_libero_path("init_states"),
+                        init_files_root,  # 🔥 替换这里
                         self.tasks[i].problem_folder,
                         self.tasks[i].init_states_file.split("_light_")[0] + "." + self.tasks[i].init_states_file.split(".")[-1],
                     )
                 
                 if "_add_" in self.tasks[i].init_states_file or "_level" in self.tasks[i].init_states_file:
                     init_states_path = os.path.join(
-                        get_libero_path("init_states"),
+                        init_files_root,  # 🔥 替换这里
                         "libero_newobj",
                         self.tasks[i].problem_folder,
                         self.tasks[i].init_states_file,
                     )
-        # else:
-        #     init_states_path = os.path.join(
-        #         get_libero_path("init_states"),
-        #         self.tasks[i].problem_folder,
-        #         self.tasks[i].init_states_file,
-        #     )
+
+        # 🔥 兜底逻辑：如果上面所有 if 都没有匹配到（比如普通的文件名），使用默认路径
+        # 原代码注释掉了这个 else，建议加上，否则普通任务会报错
+        if init_states_path is None:
+            init_states_path = os.path.join(
+                init_files_root,
+                self.tasks[i].problem_folder,
+                self.tasks[i].init_states_file,
+            )
         
         # print("====init_states_path=====", init_states_path)
 

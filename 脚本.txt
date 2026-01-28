@@ -1,0 +1,1 @@
+scp -o ProxyCommand="nc -X 5 -x member.aicloud.szu.edu.cn:30027 %h %p" -i /home/lxx/project_work/VLA-Adapter/key/id_rsa  /home/lh/LIBERO-plus/assets.zip root@a18137154691919872332523:/share/home/tm866052366100000/a926312360/LXX/project/LIBERO-plus/libero/libero/
