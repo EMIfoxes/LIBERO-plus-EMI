@@ -1,5 +1,4 @@
 import tensorflow_datasets as tfds
-import cv2
 import numpy as np
 from pathlib import Path
 import os
@@ -16,9 +15,12 @@ def main(args):
     print('episodes =', split_info.num_examples)                        # goal 有4243个episodes | object 有4520个episodes
     ds_episode = builder.as_dataset(split='train', shuffle_files=False) # 返回一个 tf.data.Dataset 对象
     episode_index = 0
-    num_examples = split_info.num_examples
 
-    # num_examples = 5
+    if args.num_examples is not None:
+        num_examples = args.num_examples
+    else:
+        num_examples = split_info.num_examples
+
     for episode in tqdm(islice(ds_episode, num_examples), total=num_examples):
         file_path_bytes = episode['episode_metadata']['file_path'].numpy()  # 返回 bytes
         file_path_str = file_path_bytes.decode('utf-8')                     # 转 str
@@ -63,9 +65,9 @@ def main(args):
                 # observation (timestep, proprio, image_XXX)
                 observation_group = h5_file.create_group(name='observation')
 
-                ## image
+                # image
                 ### image_primary
-                Image.fromarray(image_primary).resize((224, 224), Image.BILINEAR).save(f'{steps_path}/image_primary.jpg') # 保存 .jpg图片
+                Image.fromarray(image_primary).resize((224, 224), Image.BILINEAR).save(f'{steps_path}/image_primary.jpg') 
                 ### image_wrist
                 Image.fromarray(image_wrist).resize((224, 224), Image.BILINEAR).save(f'{steps_path}/image_wrist.jpg')
 
@@ -81,22 +83,23 @@ def main(args):
                 ## gripper position (n, 2)
                 observation_group.create_dataset(name='gripper_position', data=proprio_state[-2:])
         
-        
-        with h5py.File(f'{episode_path}/step_info.h5', 'w') as h5_file:       # 创建step_info,h5
+        with h5py.File(f'{episode_path}/step_info.h5', 'w') as h5_file:            # 创建step_info.h5
             h5_file.create_dataset(name='length', data=len(episode['steps']))
+        
         episode_index += 1
 
-    with h5py.File(f'{str(args.outpu_dir)}/episodes_info.h5', 'w') as h5_file:
+    with h5py.File(f'{str(args.outpu_dir)}/episodes_info.h5', 'w') as h5_file:     # 创建episodes_info.h5
         episodes_dir = Path(args.outpu_dir)/'episodes'
         num_episodes = sum(1 for _ in episodes_dir.iterdir() if _.is_dir())
         h5_file.create_dataset(name='num_episodes', data=num_episodes)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', type=str, default='/home/lxx/project/LIBERO-plus/datasets/rlds/libero_plus_data_4suite') # 文件夹路径
-    parser.add_argument('--suit_name', type=str, default='libero_goal_no_noops')                                               # 数据集名称，libero_goal_no_noops | libero_object_no_noops
-    parser.add_argument('--outpu_dir', type=str, default='/home/lxx/project/DreamVLA/datasets/Dream-adapter_datasets_goal')    # 输出文件夹路径
-    parser.add_argument('--dataset_name', type=str, default='libero_goal')                                                     # 数据集名称，libero_goal | libero_object
-
+    parser.add_argument('--data_dir', type=str, default='/home/lxx/project/LIBERO-plus/datasets/rlds/libero_plus_data_4suite')   # 文件夹路径
+    parser.add_argument('--suit_name', type=str, default='libero_goal_no_noops')                                                 # 数据集名称，libero_goal_no_noops | libero_object_no_noops
+    parser.add_argument('--outpu_dir', type=str, default='/home/lxx/project/DreamVLA/datasets/Dream-adapter_datasets_goal_test') # 输出文件夹路径
+    parser.add_argument('--dataset_name', type=str, default='libero_goal')                                                       # 数据集名称，libero_goal | libero_object
+    parser.add_argument('--num_examples', type=int, default=5)  # 可选参数，指定要处理的episodes数量，None表示处理全部episodes
     args = parser.parse_args()
     main(args)
+    print('finish!')
